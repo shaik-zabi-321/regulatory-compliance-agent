@@ -1,0 +1,16 @@
+DATA PRIVACY POLICY - INTERNAL
+
+Section 1: Data Collection
+Our company collects user data including name, email, and browsing behavior for the purpose of improving our services. Users are notified of data collection through a banner on first visit. We do not currently require explicit opt-in consent before collecting behavioral data; users are considered opted-in unless they navigate to settings and opt out manually.
+
+Section 2: Data Retention
+User data is retained indefinitely unless the user submits a written request for deletion. We do not have an automated process for periodic data purging.
+
+Section 3: Data Sharing with Third Parties
+We may share aggregated, anonymized user data with marketing partners. We do not currently disclose the specific list of third parties receiving this data in our public privacy policy.
+
+Section 4: International Data Transfers
+User data collected in the EU is stored on servers located in the United States. We rely on standard contractual clauses for this transfer, last reviewed in 2019.
+
+Section 5: Breach Notification
+In the event of a data breach, affected users will be notified within 30 days of confirmed detection.
