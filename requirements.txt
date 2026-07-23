@@ -1,0 +1,8 @@
+streamlit
+pymupdf
+langchain-core
+chromadb
+voyageai
+groq
+tavily-python
+python-dotenv
