@@ -1,101 +1,45 @@
-# Regulatory Compliance Agent
+# DPDPA & Multi-Jurisdiction Privacy Compliance Checker
 
-An agentic AI system that checks a company's internal policy documents against
-real-world regulations, using Retrieval-Augmented Generation (RAG) and
-LLM-driven tool calling.
-
-Unlike a simple RAG chatbot (retrieve → answer), this project builds a true
-**agent**: given a question, the LLM itself decides whether to search internal
-policy documents, search the live web for current regulations, or both — then
-reasons over whatever it finds.
+An AI agent that checks a company's privacy policy against real data protection
+laws (India's DPDPA, GDPR, CCPA, and others), using RAG (retrieval-augmented
+generation) and an LLM-driven agent that decides what to search and how to
+reason about it.
 
 ## How it works
 
-1. **Ingestion** — a policy document is loaded and split into chunks by
-   section (`load_document`, `chunk_by_section`)
-2. **Embedding + storage** — each chunk is embedded and stored in a local
-   Chroma vector database (`build_vector_store`)
-3. **Retrieval** — semantic search over the vector database returns the most
-   relevant policy sections for a given query (`retrieve`)
-4. **Reasoning** — an LLM (Llama 3.3 70B, via Groq) compares a policy section
-   against a regulation and flags gaps or conflicts (`compare_policy_to_regulation`)
-5. **Web search** — a second tool lets the agent search the live web for
-   current regulations and enforcement trends (`search_regulations`, via Tavily)
-6. **Agent loop** — the LLM is given both tools and decides, per question,
-   which one (or both) to call, with what arguments, based on the nature of
-   the question (`ask_agent`)
+1. Upload a company's privacy policy (PDF).
+2. The document is split into small text chunks and embedded (Voyage AI),
+   then stored in a local vector database (Chroma).
+3. The agent searches the live web for the actual regulation text, restricted
+   to official/authoritative government and legal sources.
+4. An LLM (Llama 3.3 70B via Groq) reads the regulation and extracts a list
+   of specific, checkable requirements.
+5. For each requirement, the agent retrieves the most relevant chunks from
+   the uploaded policy and judges Compliant / Partial / Non-Compliant, with
+   a quoted excerpt and confidence score.
+6. All findings are compiled into one report.
 
-## Architecture
+## How the model behaves — important to know before reading a report
 
-```
-User question
-      |
-      v
-  Groq (Llama 3.3 70B) -- decides which tool to call
-      |
-      +--> retrieve_policy(query)       -> searches local Chroma vector DB
-      |
-      +--> search_regulations(topic)    -> searches the live web (Tavily)
-      |
-      v
-  Result returned to the model / user
-```
+- It is **strict, not generous**. It does not treat a company's own
+  terminology (e.g. "Grievance Officer") as automatically equivalent to a
+  legally distinct role (e.g. "Data Protection Officer") unless the policy
+  explicitly says so.
+- It will say **"Partial"** rather than guess, whenever wording is related
+  but not a clear, confirmed match — this was a deliberate fix after early
+  testing showed the model marking things "Compliant" too easily.
+- It only uses what's actually **retrieved** from the uploaded document — if
+  a relevant section wasn't retrieved for a given check, the model may say
+  something is missing even if it exists elsewhere in the document. This is
+  a known limitation, not a claim that the full document was reviewed.
+- Every report ends with a reminder that this is AI-generated and should be
+  verified by a qualified compliance professional before acting on it.
 
-## Tech stack
+## Limitations
 
-- **LLM / tool calling:** Groq API (Llama 3.3 70B)
-- **Vector database:** Chroma (local, persistent)
-- **Web search:** Tavily API
-- **Language:** Python
-
-## Setup
-
-1. Clone this repo and install dependencies:
-   ```bash
-   pip install chromadb groq tavily-python python-dotenv
-   ```
-
-2. Create a `.env` file in the project root:
-   ```
-   GROQ_API_KEY=your-groq-key-here
-   TAVILY_API_KEY=your-tavily-key-here
-   ```
-
-3. Run the script:
-   ```bash
-   python3 main.py
-   ```
-
-## Example
-
-```
-ask_agent("Do we get explicit consent before collecting user data?")
-```
-→ Agent calls `retrieve_policy`, finds the relevant internal policy section,
-and flags that it relies on opt-out consent rather than the explicit opt-in
-required under GDPR.
-
-```
-ask_agent("What are the current GDPR fines for non-compliance?")
-```
-→ Agent calls `search_regulations`, pulling current, real enforcement data
-from the live web instead of relying on internal documents alone.
-
-## What this project demonstrates
-
-- Building a RAG pipeline from scratch (chunking, embeddings, retrieval) —
-  no framework, every piece written and understood individually
-- LLM tool-use / function calling, including parsing structured tool-call
-  responses and routing to the correct function
-- Genuine agentic decision-making: the model chooses between two different
-  tools based on the question, rather than following a hardcoded sequence
-- Combining private/internal knowledge (RAG) with real-time external
-  knowledge (web search) in a single agent
-
-## Possible extensions
-
-- Add a final synthesis step where the agent combines retrieved policy text
-  and live regulation search results into one structured compliance report
-- Support ingesting multiple documents / real contracts instead of one
-  sample policy file
-- Add a Streamlit interface for interactive use in the browser
+- Processing takes several minutes due to embedding API rate limits.
+- Search accuracy depends on the source websites available for a given law;
+  it can occasionally miss or misattribute regulation text.
+- The tool does not verify that an uploaded document is actually a consumer
+  privacy policy (as opposed to, e.g., a business partner contract) — testing
+  a mismatched document type can produce misleading results.

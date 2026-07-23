@@ -158,7 +158,14 @@ def search_regulations(topic):
     response = client.search(
         query=topic,
         max_results=3,
-        include_domains=["meity.gov.in", "dpdpa.com"]
+        include_domains=[
+            "meity.gov.in", "dpdpa.com",              # India - DPDPA
+            "eur-lex.europa.eu", "gdpr-info.eu",       # EU - GDPR
+            "oag.ca.gov", "cppa.ca.gov",               # California - CCPA/CPRA
+            "ico.org.uk",                              # UK - UK GDPR
+            "priv.gc.ca",                               # Canada - PIPEDA
+            "ftc.gov"                                   # US Federal - COPPA
+        ]
     )
 
     summary = ""
@@ -278,10 +285,10 @@ Confidence:
 # 8. Orchestrator
 # ---------------------------------------------------------------------------
 
-def check_compliance(topic, status_callback=None):
+def check_compliance(topic, regulation_name="India's Digital Personal Data Protection Act 2023", status_callback=None):
     regulation = search_regulations(
         "general " + topic +
-        " under India's Digital Personal Data Protection Act 2023, not sector-specific"
+        " under " + regulation_name + ", not sector-specific"
     )
 
     requirements = extract_requirements(regulation)
@@ -322,19 +329,27 @@ def check_compliance(topic, status_callback=None):
 # Streamlit UI
 # ---------------------------------------------------------------------------
 
-st.set_page_config(page_title="DPDPA Compliance Checker", page_icon="🇮🇳")
+st.set_page_config(page_title="Privacy Compliance Checker", page_icon="🌐")
 
-st.title("🇮🇳 India DPDPA Compliance Checker")
+st.title("🌐 Privacy Compliance Checker")
 
 st.warning(
     "**Scope & Limitations**\n\n"
-    "- This tool currently checks compliance against **India's Digital Personal "
-    "Data Protection Act (DPDPA) 2023 only** — not GDPR, CCPA, or other regional laws.\n"
     "- All analysis is **AI-generated** and may miss context or contain errors. "
     "It is **not a substitute for professional legal review.**\n"
+    "- Search accuracy depends on which official sources are available for the "
+    "selected law — some jurisdictions have been tested more thoroughly than others.\n"
     "- Processing takes **2–5 minutes** due to API rate limits on the embedding "
     "and analysis services this tool relies on."
 )
+
+REGULATIONS = {
+    "India — Digital Personal Data Protection Act (DPDPA) 2023": "India's Digital Personal Data Protection Act 2023",
+    "European Union — GDPR": "the EU General Data Protection Regulation (GDPR)",
+    "California, USA — CCPA/CPRA": "the California Consumer Privacy Act (CCPA/CPRA)",
+    "United Kingdom — UK GDPR": "the UK GDPR",
+    "Canada — PIPEDA": "Canada's PIPEDA",
+}
 
 uploaded_file = st.file_uploader("Upload a company privacy policy (PDF)", type="pdf")
 
@@ -360,6 +375,8 @@ if uploaded_file is not None:
         st.success(f"Processed {collection.count()} sections from the document.")
 
     if st.session_state.get("chunks_ready"):
+        selected_law = st.selectbox("Which law should this be checked against?", list(REGULATIONS.keys()))
+
         topic = st.text_input(
             "What would you like to check?",
             value="data retention and protection"
@@ -372,7 +389,11 @@ if uploaded_file is not None:
                 status_placeholder.info(msg)
 
             with st.spinner("Analyzing compliance... this may take a few minutes"):
-                report = check_compliance(topic, status_callback=update_status)
+                report = check_compliance(
+                    topic,
+                    regulation_name=REGULATIONS[selected_law],
+                    status_callback=update_status
+                )
 
             status_placeholder.empty()
             st.markdown(report)
