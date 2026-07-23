@@ -1,0 +1,16 @@
+EMPLOYEE & CUSTOMER DATA POLICY (Last updated 2015)
+
+Section 1: Data Collection
+The company collects customer names, addresses, phone numbers, and purchase history for marketing and internal analytics. Consent is assumed upon use of our website or store loyalty card; no separate consent form is required.
+
+Section 2: Marketing Communications
+Customers will receive promotional emails and SMS messages unless they call our support line to request removal. There is no online unsubscribe link at this time.
+
+Section 3: Data Storage
+All customer data is stored indefinitely on company servers. There is no scheduled deletion process.
+
+Section 4: Third-Party Sharing
+Customer data may be sold to third-party marketing companies to generate additional revenue. This is disclosed only in the printed terms and conditions available at physical store locations.
+
+Section 5: Data Breach Response
+In case of a data breach, the company will notify affected customers "as soon as reasonably possible," with no fixed timeline specified.
